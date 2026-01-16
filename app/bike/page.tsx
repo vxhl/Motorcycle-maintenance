@@ -1,23 +1,9 @@
 'use client';
 
-import { Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Box, Info } from 'lucide-react';
-import dynamic from 'next/dynamic';
 import Image from 'next/image';
-
-// Dynamically import the 3D component to avoid SSR issues
-const BikeModel = dynamic(() => import('@/components/BikeModel'), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-[600px] rounded-lg border-2 border-sheikah-blue bg-gradient-to-b from-dark-stone to-slate-blue flex items-center justify-center">
-      <div className="text-center">
-        <Box className="animate-spin text-sheikah-blue mx-auto mb-4" size={48} />
-        <p className="text-sheikah-blue sheikah-glow">Loading Master Cycle...</p>
-      </div>
-    </div>
-  ),
-});
+import BikeModelPlaceholder from '@/components/BikeModelPlaceholder';
 
 export default function BikePage() {
   return (
@@ -78,18 +64,7 @@ export default function BikePage() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2 }}
       >
-        <Suspense
-          fallback={
-            <div className="w-full h-[600px] rounded-lg border-2 border-sheikah-blue bg-gradient-to-b from-dark-stone to-slate-blue flex items-center justify-center">
-              <div className="text-center">
-                <Box className="animate-spin text-sheikah-blue mx-auto mb-4" size={48} />
-                <p className="text-sheikah-blue sheikah-glow">Loading Master Cycle...</p>
-              </div>
-            </div>
-          }
-        >
-          <BikeModel />
-        </Suspense>
+        <BikeModelPlaceholder />
       </motion.div>
 
       {/* Model Info */}
