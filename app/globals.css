@@ -1,26 +1,104 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Zelda: Breath of the Wild - Sheikah Slate color palette */
+  --background: #1a1a24;
+  --foreground: #e8dcc4;
+  --sheikah-blue: #4dd0e1;
+  --ancient-gold: #d4a574;
+  --shrine-teal: #4a9d9c;
+  --spirit-yellow: #f39c12;
+  --health-red: #e74c3c;
+  --stamina-green: #2ecc71;
+  --slate-blue: #2c5f8d;
+  --deep-blue: #1e3a5f;
+  --dark-stone: #1a1a24;
+  --parchment: #f5f1e8;
+  --aged-paper: #e8dcc4;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+@theme {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  
+  /* Zelda BotW Color Theme */
+  --color-sheikah-blue: #4dd0e1;
+  --color-ancient-gold: #d4a574;
+  --color-shrine-teal: #4a9d9c;
+  --color-spirit-yellow: #f39c12;
+  --color-stamina-green: #2ecc71;
+  --color-health-red: #e74c3c;
+  --color-slate-blue: #2c5f8d;
+  --color-deep-blue: #1e3a5f;
+  --color-dark-stone: #1a1a24;
+  --color-aged-paper: #e8dcc4;
+  --color-parchment: #f5f1e8;
+  
+  /* Legacy mappings */
+  --color-cyan: #4dd0e1;
+  --color-neon-blue: #4dd0e1;
+  --color-neon-pink: #d4a574;
+  --color-neon-purple: #4a9d9c;
+  --color-yellow: #f39c12;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #1a1a24;
+  color: #e8dcc4;
+  font-family: system-ui, -apple-system, 'Segoe UI', 'Roboto', sans-serif;
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(77, 208, 225, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(212, 165, 116, 0.05) 0%, transparent 50%);
+}
+
+/* Sheikah glow effect */
+@keyframes sheikah-pulse {
+  0%, 100% {
+    opacity: 1;
+    filter: drop-shadow(0 0 8px rgba(77, 208, 225, 0.6));
+  }
+  50% {
+    opacity: 0.8;
+    filter: drop-shadow(0 0 12px rgba(77, 208, 225, 0.8));
+  }
+}
+
+.sheikah-glow {
+  text-shadow: 
+    0 0 10px rgba(77, 208, 225, 0.5),
+    0 0 20px rgba(77, 208, 225, 0.3),
+    0 0 30px rgba(77, 208, 225, 0.2);
+}
+
+.ancient-glow {
+  text-shadow: 
+    0 0 10px rgba(212, 165, 116, 0.5),
+    0 0 20px rgba(212, 165, 116, 0.3);
+}
+
+/* Legacy support */
+.neon-glow {
+  text-shadow: 
+    0 0 10px rgba(77, 208, 225, 0.5),
+    0 0 20px rgba(77, 208, 225, 0.3);
+}
+
+/* Custom scrollbar - Ancient tech style */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--dark-stone);
+  border-left: 1px solid var(--slate-blue);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--sheikah-blue);
+  border-radius: 5px;
+  border: 2px solid var(--dark-stone);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--shrine-teal);
 }

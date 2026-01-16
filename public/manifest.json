@@ -1,0 +1,56 @@
+{
+  "name": "Master Cycle Tracker - Hyrulean Maintenance Log",
+  "short_name": "Master Cycle",
+  "description": "Track your Master Cycle maintenance, log your adventures, and complete your Champion's Path",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a24",
+  "theme_color": "#4dd0e1",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/master_cycle.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/master_cycle.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "categories": ["lifestyle", "productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Log Journey",
+      "short_name": "Journey",
+      "description": "Record your travels",
+      "url": "/mileage",
+      "icons": [{ "src": "/master_cycle.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Upgrade Station",
+      "short_name": "Upgrades",
+      "description": "Check maintenance tasks",
+      "url": "/maintenance",
+      "icons": [{ "src": "/master_cycle.png", "sizes": "192x192" }]
+    }
+  ]
+}
+

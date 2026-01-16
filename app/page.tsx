@@ -1,65 +1,264 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useApp } from '@/contexts/AppContext';
+import { Calendar, Wrench, TrendingUp, Trophy, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+
+export default function HomePage() {
+  const { data } = useApp();
+
+  const overdueTasks = data.maintenanceTasks.filter(task => {
+    if (!task.nextDue) return false;
+    return new Date(task.nextDue) < new Date();
+  });
+
+  const criticalComponents = data.componentChecks.filter(c => c.status === 'critical');
+  const recentMileage = data.mileageEntries.slice(0, 3);
+  const recentAchievements = data.achievements
+    .filter(a => a.unlocked)
+    .sort((a, b) => {
+      if (!a.unlockedAt || !b.unlockedAt) return 0;
+      return b.unlockedAt.getTime() - a.unlockedAt.getTime();
+    })
+    .slice(0, 3);
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+    },
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6"
+    >
+      {/* Hero Section */}
+      <motion.div
+        variants={itemVariants}
+        className="bg-gradient-to-br from-slate-blue to-deep-blue rounded-xl p-6 border-2 border-sheikah-blue shadow-xl relative overflow-hidden"
+      >
+        <div className="absolute top-0 right-0 w-32 h-32 bg-sheikah-blue opacity-5 rounded-full blur-3xl"></div>
+        <div className="flex items-center gap-3 mb-2">
+          <Image 
+            src="/tripower.png" 
+            alt="Triforce" 
+            width={32} 
+            height={32}
+            className="drop-shadow-[0_0_10px_rgba(243,156,18,0.6)]"
+          />
+          <h2 className="text-2xl font-bold text-sheikah-blue sheikah-glow relative">
+            Welcome, Champion
+          </h2>
+        </div>
+        <p className="text-aged-paper relative">
+          Your Master Cycle awaits - track upgrades and complete your journey
+        </p>
+      </motion.div>
+
+      {/* Quick Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <motion.div
+          variants={itemVariants}
+          className="bg-slate-blue/50 rounded-xl p-4 border-2 border-sheikah-blue shadow-lg hover:shadow-sheikah-blue/20 transition-all"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <TrendingUp size={20} className="text-sheikah-blue" />
+            <span className="text-sm text-aged-paper">Journey</span>
+          </div>
+          <p className="text-2xl font-bold text-sheikah-blue">
+            {data.totalKilometers.toFixed(0)}
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          <span className="text-xs text-aged-paper/70">km traveled</span>
+        </motion.div>
+
+        <motion.div
+          variants={itemVariants}
+          className="bg-slate-blue/50 rounded-xl p-4 border-2 border-ancient-gold shadow-lg hover:shadow-ancient-gold/20 transition-all"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <Wrench size={20} className="text-ancient-gold" />
+            <span className="text-sm text-aged-paper">Upgrades</span>
+          </div>
+          <p className="text-2xl font-bold text-ancient-gold">
+            {data.maintenanceTasks.length}
+          </p>
+          <span className="text-xs text-aged-paper/70">tracked</span>
+        </motion.div>
+
+        <motion.div
+          variants={itemVariants}
+          className="bg-slate-blue/50 rounded-xl p-4 border-2 border-shrine-teal shadow-lg hover:shadow-shrine-teal/20 transition-all"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <Trophy size={20} className="text-shrine-teal" />
+            <span className="text-sm text-aged-paper">Shrines</span>
+          </div>
+          <p className="text-2xl font-bold text-shrine-teal">
+            {data.achievements.filter(a => a.unlocked).length}
+          </p>
+          <span className="text-xs text-aged-paper/70">completed</span>
+        </motion.div>
+
+        <motion.div
+          variants={itemVariants}
+          className="bg-slate-blue/50 rounded-xl p-4 border-2 border-spirit-yellow shadow-lg hover:shadow-spirit-yellow/20 transition-all"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <Calendar size={20} className="text-spirit-yellow" />
+            <span className="text-sm text-aged-paper">Overdue</span>
+          </div>
+          <p className="text-2xl font-bold text-spirit-yellow">
+            {overdueTasks.length}
+          </p>
+          <span className="text-xs text-aged-paper/70">tasks</span>
+        </motion.div>
+      </div>
+
+      {/* Alerts */}
+      {(overdueTasks.length > 0 || criticalComponents.length > 0) && (
+        <motion.div
+          variants={itemVariants}
+          className="bg-health-red/10 border-2 border-health-red rounded-xl p-4 shadow-lg"
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <AlertCircle className="text-health-red" />
+            <h3 className="text-lg font-bold text-health-red">⚠️ Champion's Notice</h3>
+          </div>
+          <div className="space-y-2">
+            {overdueTasks.map(task => (
+              <div key={task.id} className="text-sm text-aged-paper">
+                • {task.name} requires attention
+              </div>
+            ))}
+            {criticalComponents.map(comp => (
+              <div key={comp.id} className="text-sm text-aged-paper">
+                • {comp.name} needs immediate care
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Recent Activity Grid */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Recent Mileage */}
+        <motion.div
+          variants={itemVariants}
+          className="bg-slate-blue/50 rounded-xl p-6 border-2 border-sheikah-blue shadow-lg"
+        >
+          <h3 className="text-lg font-bold text-sheikah-blue mb-4 flex items-center gap-2">
+            <TrendingUp size={20} />
+            Recent Adventures
+          </h3>
+          {recentMileage.length === 0 ? (
+            <p className="text-aged-paper/70 text-sm">No adventures logged yet</p>
+          ) : (
+            <div className="space-y-3">
+              {recentMileage.map(entry => (
+                <div key={entry.id} className="flex justify-between items-center p-2 rounded-lg hover:bg-deep-blue/30 transition">
+                  <div>
+                    <p className="text-sm text-aged-paper">
+                      {new Date(entry.date).toLocaleDateString()}
+                    </p>
+                    {entry.notes && (
+                      <p className="text-xs text-aged-paper/60">{entry.notes}</p>
+                    )}
+                  </div>
+                  <p className="text-lg font-bold text-sheikah-blue">
+                    {entry.kilometers} km
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+          <Link
+            href="/mileage"
+            className="mt-4 block text-center py-2 rounded-lg bg-sheikah-blue/20 text-sheikah-blue hover:bg-sheikah-blue/30 transition-all border border-sheikah-blue/50"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            View All Adventures
+          </Link>
+        </motion.div>
+
+        {/* Recent Achievements */}
+        <motion.div
+          variants={itemVariants}
+          className="bg-slate-blue/50 rounded-xl p-6 border-2 border-ancient-gold shadow-lg"
+        >
+          <h3 className="text-lg font-bold text-ancient-gold mb-4 flex items-center gap-2">
+            <Trophy size={20} />
+            Recent Shrines
+          </h3>
+          {recentAchievements.length === 0 ? (
+            <p className="text-aged-paper/70 text-sm">No shrines completed yet</p>
+          ) : (
+            <div className="space-y-3">
+              {recentAchievements.map(ach => (
+                <div key={ach.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-deep-blue/30 transition">
+                  <span className="text-3xl">{ach.icon}</span>
+                  <div>
+                    <p className="font-bold text-ancient-gold">{ach.name}</p>
+                    <p className="text-xs text-aged-paper/70">{ach.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <Link
+            href="/achievements"
+            className="mt-4 block text-center py-2 rounded-lg bg-ancient-gold/20 text-ancient-gold hover:bg-ancient-gold/30 transition-all border border-ancient-gold/50"
           >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            View All Shrines
+          </Link>
+        </motion.div>
+      </div>
+
+      {/* Quick Actions */}
+      <motion.div
+        variants={itemVariants}
+        className="grid grid-cols-2 md:grid-cols-3 gap-4"
+      >
+        <Link
+          href="/maintenance"
+          className="bg-gradient-to-br from-sheikah-blue/20 to-shrine-teal/20 border-2 border-sheikah-blue rounded-xl p-6 hover:scale-105 hover:shadow-xl hover:shadow-sheikah-blue/20 transition-all"
+        >
+          <Wrench className="text-sheikah-blue mb-2" size={28} />
+          <p className="font-bold text-sheikah-blue text-lg">Upgrade Station</p>
+          <p className="text-xs text-aged-paper/70 mt-1">Tune your cycle</p>
+        </Link>
+        <Link
+          href="/mileage"
+          className="bg-gradient-to-br from-ancient-gold/20 to-spirit-yellow/20 border-2 border-ancient-gold rounded-xl p-6 hover:scale-105 hover:shadow-xl hover:shadow-ancient-gold/20 transition-all"
+        >
+          <TrendingUp className="text-ancient-gold mb-2" size={28} />
+          <p className="font-bold text-ancient-gold text-lg">Log Journey</p>
+          <p className="text-xs text-aged-paper/70 mt-1">Track adventures</p>
+        </Link>
+        <Link
+          href="/bike"
+          className="bg-gradient-to-br from-shrine-teal/20 to-stamina-green/20 border-2 border-shrine-teal rounded-xl p-6 hover:scale-105 hover:shadow-xl hover:shadow-shrine-teal/20 transition-all"
+        >
+          <Trophy className="text-shrine-teal mb-2" size={28} />
+          <p className="font-bold text-shrine-teal text-lg">View Cycle</p>
+          <p className="text-xs text-aged-paper/70 mt-1">3D model</p>
+        </Link>
+      </motion.div>
+    </motion.div>
   );
 }
