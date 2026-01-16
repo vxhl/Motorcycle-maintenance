@@ -1,7 +1,6 @@
 [build]
   command = "npm run build"
   publish = "out"
-  base = "motorcycle-app"
 
 [build.environment]
   NODE_VERSION = "20"
@@ -13,4 +12,5 @@
 
 [functions]
   node_bundler = "esbuild"
+
 
