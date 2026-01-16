@@ -24,8 +24,8 @@ self.addEventListener('install', (event) => {
 
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', (event) => {
-  // Skip chrome extensions and non-http(s) requests
-  if (!event.request.url.startsWith('http')) {
+  // Skip chrome extensions, non-http(s) requests, and POST requests
+  if (!event.request.url.startsWith('http') || event.request.method !== 'GET') {
     return;
   }
 
