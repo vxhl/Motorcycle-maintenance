@@ -22,8 +22,8 @@ export const metadata: Metadata = {
   description: "Track your Master Cycle maintenance, log your adventures, and complete your Champion's Path",
   manifest: "/manifest.json",
   icons: {
-    icon: '/master_cycle.png',
-    apple: '/master_cycle.png',
+    icon: '/mastery.png',
+    apple: '/mastery.png',
   },
 };
 

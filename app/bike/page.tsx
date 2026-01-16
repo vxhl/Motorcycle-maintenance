@@ -31,7 +31,7 @@ export default function BikePage() {
           <div>
             <h2 className="text-2xl font-bold text-sheikah-blue sheikah-glow mb-2 flex items-center gap-3">
               <Image 
-                src="/master_cycle.png" 
+                src="/mastery.png" 
                 alt="Master Cycle" 
                 width={40} 
                 height={40}
