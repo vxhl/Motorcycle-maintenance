@@ -12,6 +12,19 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+  
+  // Webpack configuration for React Three Fiber
+  webpack: (config, { isServer }) => {
+    // Fix for React Three Fiber
+    if (!isServer) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'react': require.resolve('react'),
+        'react-dom': require.resolve('react-dom'),
+      };
+    }
+    return config;
+  },
 };
 
 export default nextConfig;
