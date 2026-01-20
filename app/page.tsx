@@ -24,6 +24,21 @@ export default function HomePage() {
     })
     .slice(0, 3);
 
+  // Get upcoming scheduled events (next 7 days)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const nextWeek = new Date(today);
+  nextWeek.setDate(nextWeek.getDate() + 7);
+
+  const upcomingEvents = [...data.calendarEvents]
+    .filter(event => {
+      const eventDate = new Date(event.date);
+      eventDate.setHours(0, 0, 0, 0);
+      return eventDate >= today && eventDate <= nextWeek;
+    })
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .slice(0, 5);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -156,6 +171,58 @@ export default function HomePage() {
         </motion.div>
       )}
 
+      {/* Scheduled Events Section */}
+      {upcomingEvents.length > 0 && (
+        <motion.div
+          variants={itemVariants}
+          className="bg-slate-blue/50 rounded-xl p-6 border-2 border-spirit-yellow shadow-lg"
+        >
+          <h3 className="text-lg font-bold text-spirit-yellow mb-4 flex items-center gap-2">
+            <Calendar size={20} />
+            Upcoming Scheduled Events
+          </h3>
+          <div className="space-y-3">
+            {upcomingEvents.map(event => {
+              const eventDate = new Date(event.date);
+              const daysUntil = Math.ceil((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+              const isToday = daysUntil === 0;
+              const isTomorrow = daysUntil === 1;
+              
+              return (
+                <div
+                  key={event.id}
+                  className="flex items-center justify-between p-3 rounded-lg hover:bg-deep-blue/30 transition border border-spirit-yellow/30"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="text-2xl">
+                      {event.type === 'maintenance' && '🔧'}
+                      {event.type === 'cleaning' && '💧'}
+                      {event.type === 'service' && '🏢'}
+                      {event.type === 'custom' && '📅'}
+                    </div>
+                    <div>
+                      <p className="text-aged-paper font-semibold">{event.title}</p>
+                      <p className="text-xs text-aged-paper/60">
+                        {isToday ? '🔴 Today' : isTomorrow ? '🟡 Tomorrow' : `${daysUntil} days`}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-spirit-yellow">
+                    {eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+          <Link
+            href="/maintenance"
+            className="mt-4 block text-center py-2 rounded-lg bg-spirit-yellow/20 text-spirit-yellow hover:bg-spirit-yellow/30 transition-all border border-spirit-yellow/50"
+          >
+            View Full Calendar
+          </Link>
+        </motion.div>
+      )}
+
       {/* Recent Activity Grid */}
       <div className="grid md:grid-cols-2 gap-6">
         {/* Recent Mileage */}
@@ -236,26 +303,26 @@ export default function HomePage() {
       >
         <Link
           href="/maintenance"
-          className="bg-gradient-to-br from-sheikah-blue/20 to-shrine-teal/20 border-2 border-sheikah-blue rounded-xl p-6 hover:scale-105 hover:shadow-xl hover:shadow-sheikah-blue/20 transition-all"
+          className="bg-gradient-to-br from-sheikah-blue/20 to-shrine-teal/20 border-2 border-sheikah-blue rounded-xl p-4 md:p-6 hover:scale-105 hover:shadow-xl hover:shadow-sheikah-blue/20 transition-all"
         >
-          <Wrench className="text-sheikah-blue mb-2" size={28} />
-          <p className="font-bold text-sheikah-blue text-lg">Upgrade Station</p>
+          <Wrench className="text-sheikah-blue mb-2" size={24} />
+          <p className="font-bold text-sheikah-blue text-base md:text-lg">Upgrade Station</p>
           <p className="text-xs text-aged-paper/70 mt-1">Tune your cycle</p>
         </Link>
         <Link
           href="/mileage"
-          className="bg-gradient-to-br from-ancient-gold/20 to-spirit-yellow/20 border-2 border-ancient-gold rounded-xl p-6 hover:scale-105 hover:shadow-xl hover:shadow-ancient-gold/20 transition-all"
+          className="bg-gradient-to-br from-ancient-gold/20 to-spirit-yellow/20 border-2 border-ancient-gold rounded-xl p-4 md:p-6 hover:scale-105 hover:shadow-xl hover:shadow-ancient-gold/20 transition-all"
         >
-          <TrendingUp className="text-ancient-gold mb-2" size={28} />
-          <p className="font-bold text-ancient-gold text-lg">Log Journey</p>
+          <TrendingUp className="text-ancient-gold mb-2" size={24} />
+          <p className="font-bold text-ancient-gold text-base md:text-lg">Log Journey</p>
           <p className="text-xs text-aged-paper/70 mt-1">Track adventures</p>
         </Link>
         <Link
           href="/bike"
-          className="bg-gradient-to-br from-shrine-teal/20 to-stamina-green/20 border-2 border-shrine-teal rounded-xl p-6 hover:scale-105 hover:shadow-xl hover:shadow-shrine-teal/20 transition-all"
+          className="bg-gradient-to-br from-shrine-teal/20 to-stamina-green/20 border-2 border-shrine-teal rounded-xl p-4 md:p-6 hover:scale-105 hover:shadow-xl hover:shadow-shrine-teal/20 transition-all"
         >
-          <Trophy className="text-shrine-teal mb-2" size={28} />
-          <p className="font-bold text-shrine-teal text-lg">View Cycle</p>
+          <Trophy className="text-shrine-teal mb-2" size={24} />
+          <p className="font-bold text-shrine-teal text-base md:text-lg">View Cycle</p>
           <p className="text-xs text-aged-paper/70 mt-1">3D model</p>
         </Link>
       </motion.div>

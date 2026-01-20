@@ -5,23 +5,68 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, Plus, Calendar, Map } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import OdometerModal from '@/components/OdometerModal';
 
 export default function MileagePage() {
-  const { data, addMileageEntry } = useApp();
-  const [showForm, setShowForm] = useState(false);
-  const [kilometers, setKilometers] = useState('');
-  const [notes, setNotes] = useState('');
+  const { data, addMileageEntry, addTripEntry, updateTripEntry, deleteTripEntry } = useApp();
+  const [showOdometerModal, setShowOdometerModal] = useState(false);
+  const [showTripForm, setShowTripForm] = useState(false);
+  
+  // Trip form states
+  const [tripName, setTripName] = useState('');
+  const [tripNotes, setTripNotes] = useState('');
+  const [tripLocations, setTripLocations] = useState('');
+  const [editingTrip, setEditingTrip] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const km = parseFloat(kilometers);
-    if (km > 0) {
-      addMileageEntry(km, notes);
-      setKilometers('');
-      setNotes('');
-      setShowForm(false);
-    }
+  const handleOdometerUpdate = (kilometers: number, notes: string) => {
+    addMileageEntry(kilometers, notes);
   };
+
+  const handleTripSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tripName.trim()) return;
+
+    const locations = tripLocations.split(',').map(l => l.trim()).filter(l => l);
+    
+    if (editingTrip) {
+      // End existing trip
+      const trip = data.tripEntries.find(t => t.id === editingTrip);
+      if (trip) {
+        updateTripEntry({
+          ...trip,
+          endDate: new Date(),
+          endOdometer: data.totalKilometers,
+          distance: data.totalKilometers - trip.startOdometer,
+        });
+      }
+      setEditingTrip(null);
+    } else {
+      // Start new trip
+      addTripEntry({
+        name: tripName,
+        startDate: new Date(),
+        endDate: null,
+        startOdometer: data.totalKilometers,
+        endOdometer: null,
+        distance: 0,
+        notes: tripNotes,
+        locations,
+      });
+    }
+
+    setTripName('');
+    setTripNotes('');
+    setTripLocations('');
+    setShowTripForm(false);
+  };
+
+  const ongoingTrip = data.tripEntries.find(t => t.endDate === null);
+  const completedTrips = data.tripEntries.filter(t => t.endDate !== null);
+
+  // Calculate days since purchase
+  const purchaseDate = new Date(data.bikePurchaseDate);
+  const today = new Date();
+  const daysSincePurchase = Math.floor((today.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24));
 
   // Prepare chart data
   const chartData = data.mileageEntries
@@ -36,54 +81,212 @@ export default function MileagePage() {
 
   return (
     <div className="space-y-6">
+      {/* Odometer Hero Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-br from-slate-blue to-deep-blue rounded-lg p-6 border-2 border-sheikah-blue shadow-xl"
+        className="bg-gradient-to-br from-slate-blue to-deep-blue rounded-xl p-8 border-2 border-sheikah-blue shadow-2xl relative overflow-hidden"
       >
-        <div className="flex justify-between items-start">
-          <div>
-            <h2 className="text-2xl font-bold text-sheikah-blue sheikah-glow mb-2 flex items-center gap-2">
-              <Map size={28} />
-              Journey Tracker
-            </h2>
-            <p className="text-aged-paper/80">
-              Log your daily adventures and track your travels across Hyrule
+        <div className="absolute top-0 right-0 w-64 h-64 bg-sheikah-blue opacity-5 rounded-full blur-3xl"></div>
+        <div className="relative">
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-sheikah-blue sheikah-glow mb-2 flex items-center gap-2">
+                <Map size={28} />
+                Journey
+              </h2>
+              <p className="text-aged-paper/80">
+                Your adventure since {purchaseDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+              </p>
+            </div>
+            <button
+              onClick={() => setShowOdometerModal(true)}
+              className="px-3 py-2 md:px-4 md:py-2 text-sm md:text-base rounded-lg bg-sheikah-blue/20 border-2 border-sheikah-blue text-sheikah-blue hover:bg-sheikah-blue hover:text-dark-stone font-bold transition-all flex items-center gap-1 md:gap-2 sheikah-glow"
+            >
+              <Plus size={18} className="md:w-5 md:h-5" />
+              <span className="hidden sm:inline">Update</span> Odometer
+            </button>
+          </div>
+          
+          {/* Big Odometer Display */}
+          <div className="text-center py-8">
+            <p className="text-6xl md:text-8xl font-bold text-sheikah-blue sheikah-glow mb-4">
+              {data.totalKilometers.toLocaleString()}
+            </p>
+            <p className="text-3xl text-ancient-gold font-bold">kilometers</p>
+            <p className="text-aged-paper/60 mt-4">
+              {daysSincePurchase} days on the road
             </p>
           </div>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="px-4 py-2 rounded-lg bg-sheikah-blue/20 border-2 border-sheikah-blue text-sheikah-blue hover:bg-sheikah-blue hover:text-dark-stone font-bold transition-all flex items-center gap-2 sheikah-glow"
-          >
-            <Plus size={20} />
-            Log Journey
-          </button>
         </div>
       </motion.div>
 
+      {/* Ongoing Trip Display */}
+      {ongoingTrip && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-gradient-to-br from-spirit-yellow/20 to-ancient-gold/20 rounded-xl p-6 border-2 border-spirit-yellow shadow-xl"
+        >
+          <div className="flex justify-between items-start">
+            <div>
+              <h3 className="text-2xl font-bold text-spirit-yellow mb-2">🚀 Trip in Progress</h3>
+              <p className="text-3xl font-bold text-sheikah-blue mb-2">{ongoingTrip.name}</p>
+              <p className="text-aged-paper/80 mb-2">
+                Started: {new Date(ongoingTrip.startDate).toLocaleDateString()}
+              </p>
+              <p className="text-aged-paper/80 mb-2">
+                Start Odometer: {ongoingTrip.startOdometer.toFixed(1)} km
+              </p>
+              <p className="text-2xl font-bold text-ancient-gold">
+                Distance so far: {(data.totalKilometers - ongoingTrip.startOdometer).toFixed(1)} km
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setEditingTrip(ongoingTrip.id);
+                setTripName(ongoingTrip.name);
+                setShowTripForm(true);
+              }}
+              className="px-3 py-2 text-sm md:text-base rounded-lg bg-stamina-green/20 border-2 border-stamina-green text-stamina-green hover:bg-stamina-green hover:text-dark-stone font-bold transition-all"
+            >
+              End Trip
+            </button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Trip Logger Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-slate-blue/50 rounded-xl p-6 border-2 border-ancient-gold shadow-lg"
+      >
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-bold text-ancient-gold ancient-glow">Long Ride Logger</h3>
+          {!ongoingTrip && (
+            <button
+              onClick={() => setShowTripForm(!showTripForm)}
+              className="px-3 py-2 text-sm md:text-base rounded-lg bg-ancient-gold/20 border-2 border-ancient-gold text-ancient-gold hover:bg-ancient-gold hover:text-dark-stone font-bold transition-all flex items-center gap-1 md:gap-2"
+            >
+              <Plus size={16} className="md:w-5 md:h-5" />
+              Start Trip
+            </button>
+          )}
+        </div>
+        
+        <p className="text-aged-paper/70 text-sm mb-4">
+          Track your long rides and epic journeys separately from daily commutes
+        </p>
+
+        {/* Trip Form */}
+        {showTripForm && (
+          <form onSubmit={handleTripSubmit} className="mb-4 p-4 bg-dark-stone/50 rounded-lg border border-ancient-gold/30">
+            <h4 className="text-lg font-bold text-sheikah-blue mb-3">
+              {editingTrip ? 'End Trip' : 'Start New Trip'}
+            </h4>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-aged-paper font-semibold mb-2">Trip Name *</label>
+                <input
+                  type="text"
+                  value={tripName}
+                  onChange={(e) => setTripName(e.target.value)}
+                  placeholder="e.g., Weekend Goa Trip"
+                  className="w-full p-3 bg-slate-blue/20 border-2 border-sheikah-blue/30 rounded-lg text-aged-paper placeholder-aged-paper/40 focus:border-sheikah-blue focus:outline-none"
+                  required
+                  disabled={!!editingTrip}
+                />
+              </div>
+              {!editingTrip && (
+                <>
+                  <div>
+                    <label className="block text-aged-paper font-semibold mb-2">Locations (comma-separated)</label>
+                    <input
+                      type="text"
+                      value={tripLocations}
+                      onChange={(e) => setTripLocations(e.target.value)}
+                      placeholder="e.g., Mumbai, Pune, Goa"
+                      className="w-full p-3 bg-slate-blue/20 border-2 border-sheikah-blue/30 rounded-lg text-aged-paper placeholder-aged-paper/40 focus:border-sheikah-blue focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-aged-paper font-semibold mb-2">Notes</label>
+                    <textarea
+                      value={tripNotes}
+                      onChange={(e) => setTripNotes(e.target.value)}
+                      placeholder="Trip details, route, companions, etc."
+                      rows={3}
+                      className="w-full p-3 bg-slate-blue/20 border-2 border-sheikah-blue/30 rounded-lg text-aged-paper placeholder-aged-paper/40 focus:border-sheikah-blue focus:outline-none resize-none"
+                    />
+                  </div>
+                </>
+              )}
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowTripForm(false);
+                    setEditingTrip(null);
+                    setTripName('');
+                    setTripNotes('');
+                    setTripLocations('');
+                  }}
+                  className="flex-1 px-4 py-2 bg-slate-blue/30 hover:bg-slate-blue/50 text-aged-paper rounded-lg transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-ancient-gold/20 border-2 border-ancient-gold text-ancient-gold hover:bg-ancient-gold hover:text-dark-stone rounded-lg transition-all font-bold"
+                >
+                  {editingTrip ? 'End Trip' : 'Start Trip'}
+                </button>
+              </div>
+            </div>
+          </form>
+        )}
+
+        {/* Completed Trips */}
+        {completedTrips.length > 0 && (
+          <div className="space-y-3">
+            <h4 className="text-lg font-bold text-shrine-teal">Completed Trips</h4>
+            {completedTrips.slice(0, 5).map((trip) => (
+              <div
+                key={trip.id}
+                className="p-4 rounded-lg bg-slate-blue/20 border border-shrine-teal/30 hover:border-shrine-teal/60 transition-colors"
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <p className="text-xl font-bold text-sheikah-blue">{trip.name}</p>
+                    <p className="text-sm text-aged-paper/70">
+                      {new Date(trip.startDate).toLocaleDateString()} - {trip.endDate && new Date(trip.endDate).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <p className="text-2xl font-bold text-ancient-gold">{trip.distance.toFixed(1)} km</p>
+                </div>
+                {trip.locations.length > 0 && (
+                  <p className="text-sm text-shrine-teal">📍 {trip.locations.join(' → ')}</p>
+                )}
+                {trip.notes && (
+                  <p className="text-sm text-aged-paper/60 mt-2 italic">{trip.notes}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </motion.div>
+
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
-          className="bg-gradient-to-br from-slate-blue/40 to-sheikah-blue/20 rounded-lg p-6 border-2 border-sheikah-blue"
-        >
-          <TrendingUp className="text-sheikah-blue mb-2" size={24} />
-          <p className="text-sm text-aged-paper/70 mb-1">Total Distance</p>
-          <p className="text-3xl font-bold text-sheikah-blue">
-            {data.totalKilometers.toFixed(1)} <span className="text-lg">km</span>
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
           className="bg-gradient-to-br from-shrine-teal/40 to-ancient-gold/20 rounded-lg p-6 border-2 border-ancient-gold"
         >
           <Calendar className="text-ancient-gold mb-2" size={24} />
-          <p className="text-sm text-aged-paper/70 mb-1">Total Journeys</p>
+          <p className="text-sm text-aged-paper/70 mb-1">Daily Updates</p>
           <p className="text-3xl font-bold text-ancient-gold">
             {data.mileageEntries.length}
           </p>
@@ -92,74 +295,24 @@ export default function MileagePage() {
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3 }}
-          className="bg-gradient-to-br from-spirit-yellow/40 to-shrine-teal/20 rounded-lg p-6 border-2 border-spirit-yellow col-span-2 md:col-span-1"
+          transition={{ delay: 0.2 }}
+          className="bg-gradient-to-br from-spirit-yellow/40 to-shrine-teal/20 rounded-lg p-6 border-2 border-spirit-yellow"
         >
           <Map className="text-spirit-yellow mb-2" size={24} />
-          <p className="text-sm text-aged-paper/70 mb-1">Avg Per Journey</p>
+          <p className="text-sm text-aged-paper/70 mb-1">Long Trips</p>
           <p className="text-3xl font-bold text-spirit-yellow">
-            {data.mileageEntries.length > 0
-              ? (data.totalKilometers / data.mileageEntries.length).toFixed(1)
-              : '0.0'}{' '}
-            <span className="text-lg">km</span>
+            {completedTrips.length}
           </p>
         </motion.div>
       </div>
 
-      {/* Add Entry Form */}
-      {showForm && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
-          className="bg-dark-stone rounded-lg p-6 border-2 border-sheikah-blue"
-        >
-          <h3 className="text-xl font-bold text-sheikah-blue mb-4">Record New Journey</h3>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-aged-paper font-semibold mb-2">
-                Distance (km) *
-              </label>
-              <input
-                type="number"
-                step="0.1"
-                value={kilometers}
-                onChange={(e) => setKilometers(e.target.value)}
-                placeholder="e.g., 25.5"
-                className="w-full p-3 bg-slate-blue/20 border-2 border-sheikah-blue/30 rounded-lg text-aged-paper placeholder-aged-paper/40 focus:border-sheikah-blue focus:outline-none transition-colors"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-aged-paper font-semibold mb-2">
-                Journey Notes
-              </label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Where did you travel today? (optional)"
-                rows={3}
-                className="w-full p-3 bg-slate-blue/20 border-2 border-sheikah-blue/30 rounded-lg text-aged-paper placeholder-aged-paper/40 focus:border-sheikah-blue focus:outline-none transition-colors resize-none"
-              />
-            </div>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="flex-1 px-4 py-3 bg-slate-blue/30 hover:bg-slate-blue/50 text-aged-paper rounded-lg transition-all border border-aged-paper/20"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="flex-1 px-4 py-3 bg-sheikah-blue/20 border-2 border-sheikah-blue text-sheikah-blue hover:bg-sheikah-blue hover:text-dark-stone rounded-lg transition-all font-bold sheikah-glow"
-              >
-                Log Journey
-              </button>
-            </div>
-          </form>
-        </motion.div>
-      )}
+      {/* Odometer Update Modal */}
+      <OdometerModal
+        isOpen={showOdometerModal}
+        onClose={() => setShowOdometerModal(false)}
+        currentOdometer={data.totalKilometers}
+        onSave={handleOdometerUpdate}
+      />
 
       {/* Chart */}
       {chartData.length > 0 && (
@@ -268,13 +421,13 @@ export default function MileagePage() {
         transition={{ delay: 0.6 }}
         className="bg-gradient-to-br from-spirit-yellow/20 to-ancient-gold/20 rounded-lg p-6 border-2 border-spirit-yellow"
       >
-        <h3 className="text-xl font-bold text-spirit-yellow mb-4">Journey Milestones</h3>
+        <h3 className="text-xl font-bold text-spirit-yellow mb-4">Odometer Milestones</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { target: 100, label: 'First Century', emoji: '🏁' },
-            { target: 500, label: 'Explorer', emoji: '🗺️' },
-            { target: 1000, label: 'Adventurer', emoji: '⚔️' },
+            { target: 1000, label: 'First 1K', emoji: '🏁' },
             { target: 5000, label: 'Road Warrior', emoji: '👑' },
+            { target: 10000, label: 'Ten Thousand', emoji: '⚔️' },
+            { target: 25000, label: 'Master Rider', emoji: '🌟' },
           ].map((milestone) => {
             const progress = (data.totalKilometers / milestone.target) * 100;
             const achieved = data.totalKilometers >= milestone.target;
@@ -289,7 +442,7 @@ export default function MileagePage() {
               >
                 <div className="text-3xl mb-2">{milestone.emoji}</div>
                 <p className="font-bold text-aged-paper">{milestone.label}</p>
-                <p className="text-sm text-aged-paper/70 mb-2">{milestone.target} km</p>
+                <p className="text-sm text-aged-paper/70 mb-2">{milestone.target.toLocaleString()} km</p>
                 <div className="w-full bg-slate-blue/30 rounded-full h-2 overflow-hidden">
                   <div
                     className={`h-full transition-all ${

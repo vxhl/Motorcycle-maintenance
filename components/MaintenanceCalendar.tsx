@@ -42,8 +42,20 @@ export default function MaintenanceCalendar({
 
   const handleDateClick = (day: number) => {
     const clickedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    clickedDate.setHours(0, 0, 0, 0);
     setSelectedDate(clickedDate);
     setIsModalOpen(true);
+  };
+
+  const getEventsForDate = (date: Date) => {
+    const targetDate = new Date(date);
+    targetDate.setHours(0, 0, 0, 0);
+    
+    return calendarEvents.filter(event => {
+      const eventDate = new Date(event.date);
+      eventDate.setHours(0, 0, 0, 0);
+      return eventDate.getTime() === targetDate.getTime();
+    });
   };
 
   const getActivitiesForDate = (day: number) => {
@@ -360,6 +372,8 @@ export default function MaintenanceCalendar({
           }}
           date={selectedDate}
           onSave={onAddEvent}
+          onDelete={onDeleteEvent}
+          existingEvents={getEventsForDate(selectedDate)}
         />
       )}
     </>

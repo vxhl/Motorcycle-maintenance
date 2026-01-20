@@ -1,21 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AppProvider } from "@/contexts/AppContext";
 import Navigation from "@/components/Navigation";
 import Header from "@/components/Header";
 // import RegisterServiceWorker from "./register-sw"; // DISABLED - causing issues
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Master Cycle Tracker - Hyrulean Maintenance Log",
@@ -42,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-dark-stone text-aged-paper`}
+        className={`antialiased bg-dark-stone text-aged-paper`}
       >
         <ErrorBoundary>
           <AppProvider>

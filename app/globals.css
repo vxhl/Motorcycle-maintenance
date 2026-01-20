@@ -18,8 +18,7 @@
 }
 
 @theme {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: system-ui, -apple-system, 'Segoe UI', 'Roboto', sans-serif;
   
   /* Zelda BotW Color Theme */
   --color-sheikah-blue: #4dd0e1;

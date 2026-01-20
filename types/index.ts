@@ -60,6 +60,33 @@ export interface CalendarEvent {
   description: string;
   completed: boolean;
   icon?: string;
+  recurring?: boolean; // For auto-recurring events
+  linkedTaskId?: string; // Link to maintenance task for auto-scheduling
+}
+
+export interface FuelEntry {
+  id: string;
+  date: Date;
+  liters: number;
+  pricePerLiter: number;
+  totalCost: number;
+  odometer: number; // Current odometer reading
+  fuelType: 'petrol' | 'premium' | 'diesel';
+  fullTank: boolean;
+  notes: string;
+}
+
+export interface TripEntry {
+  id: string;
+  name: string; // Trip name/title
+  startDate: Date;
+  endDate: Date | null; // null if ongoing
+  startOdometer: number;
+  endOdometer: number | null; // null if ongoing
+  distance: number; // calculated or manual
+  notes: string;
+  photos?: string[]; // URLs to photos
+  locations: string[]; // Places visited
 }
 
 export interface AppData {
@@ -69,8 +96,11 @@ export interface AppData {
   achievements: Achievement[];
   ridingGear: RidingGear[];
   calendarEvents: CalendarEvent[];
+  fuelEntries: FuelEntry[];
+  tripEntries: TripEntry[];
   totalKilometers: number;
   bikeModel: string;
   bikeYear: number;
+  bikePurchaseDate: Date; // When the bike was purchased
 }
 

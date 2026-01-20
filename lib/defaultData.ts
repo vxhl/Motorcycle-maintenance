@@ -1,5 +1,5 @@
 // Default data and initial state for the app
-import { AppData, MaintenanceTask, Achievement, ComponentCheck } from '@/types';
+import { AppData, MaintenanceTask, Achievement, ComponentCheck, CalendarEvent } from '@/types';
 
 export const defaultMaintenanceTasks: MaintenanceTask[] = [
   {
@@ -191,7 +191,186 @@ export const defaultAchievements: Achievement[] = [
     target: 5000,
     category: 'mileage',
   },
+  // Weird/Fun achievements
+  {
+    id: 'ach-11',
+    name: 'Night Rider',
+    description: 'Log a journey past midnight',
+    icon: '🌙',
+    unlocked: false,
+    unlockedAt: null,
+    progress: 0,
+    target: 1,
+    category: 'special',
+  },
+  {
+    id: 'ach-12',
+    name: 'Fuel Hoarder',
+    description: 'Fill up 20 times',
+    icon: '⛽',
+    unlocked: false,
+    unlockedAt: null,
+    progress: 0,
+    target: 20,
+    category: 'special',
+  },
+  {
+    id: 'ach-13',
+    name: 'Chain Obsessed',
+    description: 'Lube your chain 50 times',
+    icon: '🔗',
+    unlocked: false,
+    unlockedAt: null,
+    progress: 0,
+    target: 50,
+    category: 'maintenance',
+  },
+  {
+    id: 'ach-14',
+    name: 'Expedition Leader',
+    description: 'Complete 3 long trips',
+    icon: '🗺️',
+    unlocked: false,
+    unlockedAt: null,
+    progress: 0,
+    target: 3,
+    category: 'special',
+  },
+  {
+    id: 'ach-15',
+    name: 'Speed Demon',
+    description: 'Log 200km in a single day',
+    icon: '💨',
+    unlocked: false,
+    unlockedAt: null,
+    progress: 0,
+    target: 1,
+    category: 'mileage',
+  },
+  {
+    id: 'ach-16',
+    name: 'Penny Pincher',
+    description: 'Track fuel for 10 consecutive fills',
+    icon: '💰',
+    unlocked: false,
+    unlockedAt: null,
+    progress: 0,
+    target: 10,
+    category: 'special',
+  },
+  {
+    id: 'ach-17',
+    name: 'OCD Mechanic',
+    description: 'Complete all maintenance tasks in one day',
+    icon: '🔧',
+    unlocked: false,
+    unlockedAt: null,
+    progress: 0,
+    target: 1,
+    category: 'maintenance',
+  },
+  {
+    id: 'ach-18',
+    name: 'Birthday Ride',
+    description: 'Log a journey on your bike\'s purchase anniversary',
+    icon: '🎂',
+    unlocked: false,
+    unlockedAt: null,
+    progress: 0,
+    target: 1,
+    category: 'special',
+  },
 ];
+
+// Create default calendar events for maintenance tasks (30 days out)
+const getDefaultCalendarEvents = (): CalendarEvent[] => {
+  const events: CalendarEvent[] = [];
+  const today = new Date();
+  
+  // Add wash motorcycle event (30 days from now)
+  const washDate = new Date(today);
+  washDate.setDate(washDate.getDate() + 30);
+  events.push({
+    id: 'default-wash',
+    date: washDate,
+    type: 'cleaning',
+    title: 'Wash Motorcycle',
+    description: 'Monthly motorcycle wash',
+    completed: false,
+    recurring: true,
+    linkedTaskId: 'wash-1',
+    icon: '🧼',
+  });
+
+  // Add chain lubrication (14 days from now)
+  const chainLubeDate = new Date(today);
+  chainLubeDate.setDate(chainLubeDate.getDate() + 14);
+  events.push({
+    id: 'default-chain-lube',
+    date: chainLubeDate,
+    type: 'maintenance',
+    title: 'Chain Lubrication',
+    description: 'Bi-weekly chain lubrication',
+    completed: false,
+    recurring: true,
+    linkedTaskId: 'chain-lube-1',
+    icon: '⛓️',
+  });
+
+  // Add chain cleaning (14 days from now)
+  const chainCleanDate = new Date(today);
+  chainCleanDate.setDate(chainCleanDate.getDate() + 14);
+  events.push({
+    id: 'default-chain-clean',
+    date: chainCleanDate,
+    type: 'maintenance',
+    title: 'Chain Cleaning',
+    description: 'Deep clean the chain',
+    completed: false,
+    recurring: true,
+    linkedTaskId: 'chain-clean-1',
+    icon: '🔗',
+  });
+
+  // Add component checks (7 days from now)
+  const engineCheckDate = new Date(today);
+  engineCheckDate.setDate(engineCheckDate.getDate() + 7);
+  events.push({
+    id: 'default-engine-check',
+    date: engineCheckDate,
+    type: 'service',
+    title: 'Engine Oil Check',
+    description: 'Check engine oil level and condition',
+    completed: false,
+    icon: '🛢️',
+  });
+
+  const brakeCheckDate = new Date(today);
+  brakeCheckDate.setDate(brakeCheckDate.getDate() + 10);
+  events.push({
+    id: 'default-brake-check',
+    date: brakeCheckDate,
+    type: 'service',
+    title: 'Brake System Check',
+    description: 'Inspect brake pads and fluid',
+    completed: false,
+    icon: '🛑',
+  });
+
+  const tireCheckDate = new Date(today);
+  tireCheckDate.setDate(tireCheckDate.getDate() + 7);
+  events.push({
+    id: 'default-tire-check',
+    date: tireCheckDate,
+    type: 'service',
+    title: 'Tire Pressure Check',
+    description: 'Check and adjust tire pressure',
+    completed: false,
+    icon: '🎯',
+  });
+
+  return events;
+};
 
 export const defaultAppData: AppData = {
   maintenanceTasks: defaultMaintenanceTasks,
@@ -199,9 +378,12 @@ export const defaultAppData: AppData = {
   mileageEntries: [],
   achievements: defaultAchievements,
   ridingGear: [],
-  calendarEvents: [],
-  totalKilometers: 0,
+  calendarEvents: getDefaultCalendarEvents(),
+  fuelEntries: [],
+  tripEntries: [],
+  totalKilometers: 0, // User will set their starting odometer in settings
   bikeModel: 'My Bike',
   bikeYear: new Date().getFullYear(),
+  bikePurchaseDate: new Date(), // User will set their actual purchase date in settings
 };
 
