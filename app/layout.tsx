@@ -3,6 +3,7 @@ import "./globals.css";
 import { AppProvider } from "@/contexts/AppContext";
 import Navigation from "@/components/Navigation";
 import Header from "@/components/Header";
+import ReleaseNotesWrapper from "@/components/ReleaseNotesWrapper";
 // import RegisterServiceWorker from "./register-sw"; // DISABLED - causing issues
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
@@ -35,6 +36,7 @@ export default function RootLayout({
       >
         <ErrorBoundary>
           <AppProvider>
+            <ReleaseNotesWrapper />
             <div className="min-h-screen pb-20 md:pb-0 md:pt-20">
               <Navigation />
               <Header />
